@@ -4,7 +4,7 @@ List of favourite movies contatins title, trailer url, story, box imagery art of
 Used advanced OOP of Python for movie instances and auto-generating HTML file for fetching various Movies.
 
 
-# Project 2 - Buid a Portfolio Site: Mostafa Elsheikh
+# Project 2 - Buid a Portfolio Site
 HTML and CSS files were written and iterated until the files is a representative of the design mockup. CSS is based on bootstrap.css and on a self-written CSS document.
 Additional features have been added like Social Icons using Font-Awesome, Carousel with a Pause button and embedded Tweets.
 
