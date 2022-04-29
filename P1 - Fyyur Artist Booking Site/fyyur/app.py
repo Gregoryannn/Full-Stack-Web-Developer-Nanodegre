@@ -95,7 +95,7 @@ class Venue(db.Model):
     website_link = db.Column(db.String(500))
     upcoming_shows_count = db.Column(db.Integer, default=0)
     past_shows_count = db.Column(db.Integer, default=0)
-    artists = db.relationship('Artist', secondary = 'Shows', backref=db.backref('Venue'))
+    artists = db.relationship('Artist', secondary = 'Shows', backref=db.backref('Venue'), lazy='dynamic')
 
     def __repr__(self):
       return f'<Venue {self.id}>'
@@ -117,7 +117,7 @@ class Artist(db.Model):
     website_link = db.Column(db.String(500))
     upcoming_shows_count = db.Column(db.Integer, default=0)
     past_shows_count = db.Column(db.Integer, default=0)
-    venues = db.relationship('Venue', secondary = 'Shows', backref='Artist')
+    venues = db.relationship('Venue', secondary = 'Shows', backref='Artist', lazy='dynamic')
 
     def __repr__(self):
       return f'<Artist {self.id}>'
@@ -180,15 +180,14 @@ def show_venue(venue_id):
   venue = Venue.query.get(venue_id)
   past_shows = []
   upcoming_shows = []
-  shows = venue.shows
+  shows = Shows.venue_id
   for show in shows:
     show_info ={
       "artist_id": show.artist_id,
       "artist_name": show.artist.name,
-      "artist_image_link": show.artist.image_link,
       "start_time": str(show.start_time)
     }
-    if(show.upcoming):
+    if(Shows.upcoming):
       upcoming_shows.append(show_info)
     else:
       past_shows.append(show_info)
@@ -233,7 +232,7 @@ def create_venue_submission():
   new_venue.phone = request.form['phone']
   new_venue.facebook_link = request.form['facebook_link']
   new_venue.genres = request.form.getlist('genres')
-  new_venue.website = request.form['website']
+  new_venue.website_link = request.form['website']
   new_venue.image_link = request.form['image_link']
 
   try:
@@ -252,7 +251,7 @@ def create_venue_submission():
   return redirect(url_for('index'))
 
 
-@app.route('/venues/<venue_id>', methods=['DELETE'])
+@app.route('/venues/<venue_id>/delete', methods=['DELETE'])
 def delete_venue(venue_id):
   # TODO: Complete this endpoint for taking a venue_id, and using
   # SQLAlchemy ORM to delete a record. Handle cases where the session commit could fail.
@@ -309,7 +308,11 @@ def search_artists():
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
   # shows the venue page with the given venue_id
- 
+   # Done: replace with real venue data from the venues table, using venue_id
+  artist = Artist.query.get(artist_id)
+  Shows = artist.Shows
+  past_shows = []
+  upcoming_shows = []
     "upcoming_shows": [],
     "past_shows_count": 1,
     "upcoming_shows_count": 0,
@@ -343,6 +346,9 @@ def edit_artist(artist_id):
   shows = artist.shows
   past_shows = []
   upcoming_shows = []
+   Shows = artist.Shows
+  past_shows = []
+  upcoming_shows = []
   for show in shows:
     show_info = {
       "venue_id": show.venue_id,
@@ -361,7 +367,7 @@ def edit_artist(artist_id):
     "city": artist.city,
     "state": artist.state,
     "phone": artist.phone,
-    "website": artist.website,
+    "website": artist.website_link,
     "facebook_link": artist.facebook_link,
     "seeking_venue": artist.seeking_venue,
     "seeking_description":artist.seeking_description,
@@ -531,17 +537,17 @@ new_show = Shows()
     updated_artist = Artist.query.get(new_show.artist_id)
     updated_venue = Venue.query.get(new_show.venue_id)
     if(new_show.upcoming):
-      updated_artist.upcoming_shows_count += 1;
-      updated_venue.upcoming_shows_count += 1;
+      updated_artist.upcoming_shows_count += 1
+      updated_venue.upcoming_shows_count += 1
     else:
-      updated_artist.past_shows_count += 1;
-      updated_venue.past_shows_count += 1;
-    # on successful db insert, flash success
+      updated_artist.past_shows_count += 1
+      updated_venue.past_shows_count += 1
+  # on successful db insert, flash success
     db.session.commit()
     flash('Show was successfully listed!')
   except:
     db.session.rollback()
-    # TODO: on unsuccessful db insert, flash an error instead.
+  # TODO: on unsuccessful db insert, flash an error instead.
     flash('Show could not be listed. please make sure that your ids are correct')
   finally:
     db.session.close()
