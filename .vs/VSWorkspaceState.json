@@ -2,8 +2,10 @@
   "ExpandedNodes": [
     "",
     "\\P1 - Fyyur Artist Booking Site",
-    "\\P1 - Fyyur Artist Booking Site\\fyyur"
+    "\\P1 - Fyyur Artist Booking Site\\fyyur",
+    "\\P1 - Fyyur Artist Booking Site\\fyyur\\migrations",
+    "\\P1 - Fyyur Artist Booking Site\\fyyur\\migrations\\versions"
   ],
-  "SelectedNode": "\\P1 - Fyyur Artist Booking Site\\fyyur\\models.py",
+  "SelectedNode": "\\P1 - Fyyur Artist Booking Site\\fyyur\\migrations\\versions\\cc4bfa0ea985_.py",
   "PreviewInSolutionExplorer": false
 }

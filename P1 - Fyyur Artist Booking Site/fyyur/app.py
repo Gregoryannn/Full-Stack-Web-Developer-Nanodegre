@@ -232,9 +232,10 @@ def create_venue_submission():
   new_venue.address = request.form['address']
   new_venue.phone = request.form['phone']
   new_venue.facebook_link = request.form['facebook_link']
-  new_venue.genres = request.form['genres']
+  new_venue.genres = request.form.getlist('genres')
   new_venue.website = request.form['website']
   new_venue.image_link = request.form['image_link']
+
   try:
     db.session.add(new_venue)
     db.session.commit()
@@ -460,7 +461,7 @@ def create_artist_submission():
   new_artist.name = request.form['name']
   new_artist.city = request.form['city']
   new_artist.state = request.form['state']
-  new_artist.genres = request.form['genres']
+  new_artist.genres = request.form.getlist('genres')
   new_artist.phone = request.form['phone']
   new_artist.facebook_link = request.form['facebook_link']
   new_artist.image_link = request.form['image_link']
