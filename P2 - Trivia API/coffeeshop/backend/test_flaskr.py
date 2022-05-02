@@ -16,12 +16,11 @@ class TriviaTestCase(unittest.TestCase):
 
         #Sample question for testing:
         self.question = {
-            'question': 'When did a NHL team from a Canadian city win the Stanley Cup?',
+            'test question': 'When did a NHL team from a Canadian city win the Stanley Cup?',
             'answer': '1993, Montreal Canadiens',
             'difficulty': '2',
             'category': 6
         }
-
         # binds the app to the current context
         with self.app.app_context():
             self.db = SQLAlchemy()
@@ -36,6 +35,34 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+    def test_get_categories(self):
+        result = self.client().get('/categories')
+        data = json.loads(result.data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    def test_get_paginated_questions(self):
+        result = self.client().get('/questions')
+        data = json.loads(result.data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(data['success'], True)
+        self.assertTrue(len(data['questions']))
+
+    def test_delete_question(self):
+        testQ = Question(question=self.question['test question'], answer=self.answer['answer'], difficulty=self.difficulty['difficulty'], category=self.category['category'])
+        testQ.insert()
+        result = self.client().delete('/questions/{}'.format(testQ.id))
+        data = json.loads(result.data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+    def test_create_question(self):
+        result = self.client().post('/questions', json=self.question)
+        data = json.loads(result.data)
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(data['success'], True)
+
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main() 
