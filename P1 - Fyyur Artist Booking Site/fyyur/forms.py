@@ -1,7 +1,7 @@
 from datetime import datetime
-from flask_wtf import FlaskForm
-from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField
-from wtforms.validators import DataRequired, AnyOf, URL
+from flask_wtf import Form, FlaskForm
+from wtforms import StringField, SelectField, BooleanField, SelectMultipleField, DateTimeField
+from wtforms.validators import DataRequired, AnyOf, URL, Optional
 
 class ShowForm(FlaskForm):
     artist_id = StringField(
@@ -83,10 +83,7 @@ class VenueForm(FlaskForm):
         'address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone'
-    )
-    image_link = StringField(
-        'image_link'
+        'phone', validators=[Optional()]
     )
     genres = SelectMultipleField(
         # TODO implement enum restriction
@@ -114,7 +111,19 @@ class VenueForm(FlaskForm):
         ]
     )
     facebook_link = StringField(
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[URL(), Optional()]
+    )
+    website = StringField(
+        'website', validators=[URL(), Optional()]
+    )
+    image_link = StringField(
+        'image_link', validators=[URL(), Optional()]
+    )
+    seeking_talent = BooleanField(
+        'seeking_talent'
+    )
+    seeking_description = StringField(
+        'seeking_description'
     )
 
 class ArtistForm(FlaskForm):
@@ -184,7 +193,6 @@ class ArtistForm(FlaskForm):
         # TODO implement validation logic for state
         'phone'
     )
-
     genres = SelectMultipleField(
         # TODO implement enum restriction
         'genres', validators=[DataRequired()],
@@ -211,8 +219,18 @@ class ArtistForm(FlaskForm):
         ]
     )
     facebook_link = StringField(
-        # TODO implement enum restriction
-        'facebook_link', validators=[URL()]
+        'facebook_link', validators=[URL(), Optional()]
     )
-
-# TODO IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
+    website = StringField(
+        'website', validators=[URL(), Optional()]
+    )
+    image_link = StringField(
+        'image_link', validators=[URL(), Optional()]
+    )
+    seeking_venue = BooleanField(
+        'seeking_venue'
+    )
+    seeking_description = StringField(
+        'seeking_description'
+    )
+# Done IMPLEMENT NEW ARTIST FORM AND NEW SHOW FORM
