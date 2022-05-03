@@ -245,13 +245,13 @@ def create_app(test_config=None):
   including 404 and 422. 
   '''
   
-# @app.errorhandler(400)
-  # def bad_request(error):
-  #   return jsonify({
-  #     'success': False,
-  #     'error': 400,
-  #     'message': 'Bad request error'
-  #   }), 400
+  @app.errorhandler(400)
+  def bad_request(error):
+    return jsonify({
+      'success': False,
+      'error': 400,
+      'message': 'Bad request error'
+    }), 400
 
   @app.errorhandler(404)
   def not_found(error):
@@ -261,13 +261,13 @@ def create_app(test_config=None):
       'message': 'Resource not found'
     }), 404
 
-  # @app.errorhandler(405)
-  # def method_not_allowed(error):
-  #   return jsonify({
-  #     'success': False,
-  #     'error': 405,
-  #     'message': 'Method not allowed'
-  #   }), 405
+ @app.errorhandler(405)
+  def method_not_allowed(error):
+    return jsonify({
+      'success': False,
+      'error': 405,
+      'message': 'Method not allowed'
+    }), 405
 
   @app.errorhandler(422)
   def unprocessable_entity(error):
