@@ -78,7 +78,6 @@ def create_app(test_config=None):
       'questions': current_questions,
       'total_questions': len(selection),
       'categories': {category.id: category.type for category in categories},
-      'current_category': None,
     })
   '''
   @Done: 
@@ -137,20 +136,21 @@ def create_app(test_config=None):
   def search_questions():
     data = request.get_json()
     search_term = data.get('searchTerm')
-    try:
-      selection = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
-      paginated_questions = get_paginated_questions(request, selection)
-      return jsonify({
-        'success': True,
-        'questions': paginated_questions,
-        'total_questions': len(selection),
-        'current_category': None,
-      })
-# You can return an array of categories of the returned list of questions, instead of returning None in all cases.
-
-
-    except:
+   if search_term == ' ':
       abort(404)
+
+    categories = Category.query.order_by(Category.type).all()
+
+    selection = Question.query.filter(Question.question.ilike(f'%{search_term}%')).all()
+    paginated_questions = get_paginated_questions(request, selection)
+
+    return jsonify({
+      'success': True,
+      'questions': paginated_questions,
+      'total_questions': len(selection),
+      'categories': {category.id: category.type for category in categories},
+    })
+
   '''
   @TODO?: 
   Create a GET endpoint to get questions based on category. 
@@ -160,19 +160,20 @@ def create_app(test_config=None):
   '''
   @app.route('/categories/<int:category_id>/questions')
   def get_questions_by_category(category_id):
-    try:  
-      selection = Question.filter(Question.category == str(category_id)).all()
-      paginated_questions = get_paginated_questions(request, selection)
-      
-      return jsonify({
-        'success': True,
-        'questions': paginated_questions,
-        'total_questions': len(selection),
-        'current_category': category_id,
-      })
-    
-    except:
+ 
+    selection = Question.query.filter(Question.category==category_id).all()
+    current_questions = get_paginated_questions(request, selection)
+    if len(current_questions) == 0:
       abort(404)
+
+    return jsonify({
+      'success': True,
+      'questions': current_questions,
+      'total_questions': len(current_questions),
+      'current_category': category_id,
+    })
+
+
   '''
   @TODO: 
   Create a POST endpoint to get questions to play the quiz. 
@@ -187,17 +188,18 @@ def create_app(test_config=None):
   def play_quiz():
     try:
       data = request.get_json()
-      previous_qs = data.get('previous_questions', None)
-      q_category = data.get('quiz_category', None)
-      c_id = q_category['id']
+      previous_qs = data.get('previous_questions')
+      quiz_category = data.get('quiz_category')
+      c_id = quiz_category['id']
+
       if c_id == 0:
-        questions = Question.query.filter(Question.id.notin_(previous_qs)).all()
+        questions = Question.query.all()
       else:
-        questions = Question.query.filter(Question.category==c_id, \
-        Question.id.notin_(previous_qs)).all()
-      question = None
+         questions = Question.query.filter_by(category=c_id).all()
+
       if questions:
-        question = random.choice(questions)
+        question = questions[random.randint(0, len(questions)-1)]
+
       return jsonify({
         'success': True,
         'question': question.format()
@@ -237,4 +239,13 @@ def create_app(test_config=None):
       'error': 422,
       'message': 'Unprocessable entity'
     }), 422
-  return app    
+
+  @app.errorhandler(500)
+  def internal_server(error):
+    return jsonify({
+      'success': False,
+      'error': 500,
+      'message': 'Internal Server Error'
+    }), 500
+
+  return app 
