@@ -3,83 +3,19 @@ from flask import Flask, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 import random
-from sqlalchemy import Column, String, Integer, create_engine
-import json
-
-database_name = "trivia"
-database_path = "postgresql://peter:postgres@{}/{}".format('localhost:5432', database_name)
-
-db = SQLAlchemy()
-
-'''
-setup_db(app)
-    binds a flask application and a SQLAlchemy service
-'''
-def setup_db(app, database_path=database_path):
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_path
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    db.app = app
-    db.init_app(app)
-    db.create_all()
-
-'''
-Question
-'''
-class Question(db.Model):  
-  __tablename__ = 'questions'
-
-  id = Column(Integer, primary_key=True)
-  question = Column(String)
-  answer = Column(String)
-  category = Column(String)
-  difficulty = Column(Integer)
-
-  def __init__(self, question, answer, category, difficulty):
-    self.question = question
-    self.answer = answer
-    self.category = category
-    self.difficulty = difficulty
-
-  def insert(self):
-    db.session.add(self)
-    db.session.commit()
-
-  def update(self):
-    db.session.commit()
-
-  def delete(self):
-    db.session.delete(self)
-    db.session.commit()
-
-  def format(self):
-    return {
-      'id': self.id,
-      'question': self.question,
-      'answer': self.answer,
-      'category': self.category,
-      'difficulty': self.difficulty
-    }
-
-'''
-Category
-'''
-class Category(db.Model):  
-  __tablename__ = 'categories'
-
-  id = Column(Integer, primary_key=True)
-  type = Column(String)
-
-  def __init__(self, type):
-    self.type = type
-
-  def format(self):
-    return {
-      'id': self.id,
-      'type': self.type
-    }
-
+from models import setup_db, Question, Category, db
 QUESTIONS_PER_PAGE = 10
-
+  # Helper function to paginate questions
+    
+def get_paginated_questions(request, selection):
+  page = request.args.get('page', 1, type=int)
+  start = (page - 1) * QUESTIONS_PER_PAGE
+  end = start + QUESTIONS_PER_PAGE
+ 
+  questions = [question.format() for question in selection]
+  current_questions = questions[start:end]
+      
+  return current_questions
 def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
@@ -103,16 +39,6 @@ def create_app(test_config=None):
       'GET, POST, PUT, DELETE'
     )
     return response
-  # Helper function to paginate questions
-    
-  def get_paginated_questions(request, selection):
-    page = request.args.get('page', 1, type=int)
-    start = (page - 1) * QUESTIONS_PER_PAGE
-    end = start + QUESTIONS_PER_PAGE
-    questions = [question.format() for question in selection]
-    current_questions = questions[start:end]
-      
-    return current_questions
   '''
   @Done: 
   Create an endpoint to handle GET requests 
@@ -138,19 +64,19 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
-  app.route('/questions', methods=['GET'])
+  @app.route('/questions', methods=['GET'])
   def get_questions():
     selection = Question.query.order_by(Question.id).all()
     current_questions = get_paginated_questions(request, selection)
-    categories = Category.query.order_by(Category.type).all()
-    
     if (len(current_questions) == 0):
       abort(404)
     
+    categories = Category.query.order_by(Category.type).all()
+        
     return jsonify({
       'success': True,
-      'total_questions': len(selection),
       'questions': current_questions,
+      'total_questions': len(selection),
       'categories': {category.id: category.type for category in categories},
       'current_category': None,
     })
@@ -162,15 +88,14 @@ def create_app(test_config=None):
   '''
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
-    try:
-      question_to_delete = Question.query.get(question_id)
-      question_to_delete.delete()
-      return jsonify({
-        'success': True,
-        'deleted': question_id,
-      })
-    except:
-      abort(422)
+    question_to_delete = Question.query.get(question_id)
+    if not question_to_delete:
+      abort(404)
+    question_to_delete.delete()
+    return jsonify({
+      'success': True,
+      'deleted': question_id,
+    })
       
   '''
   @DONE?: 
@@ -183,27 +108,21 @@ def create_app(test_config=None):
   '''
   @app.route('/questions', methods=['POST'])
   def create_question():
-    data = request.get_json()
     
-    create_question = data.get('question')
-    create_answer = data.get('answer')
-    create_difficulty = data.get('difficulty')
-    create_category = data.get('category')
-    if (create_question == '') or (create_answer == '') or (create_difficulty == '') or (create_category == ''):
-      abort(422)
+    create_question = request.json.get('question')
+    create_answer = request.json.get('answer')
+    create_category = request.json.get('category')
+    create_difficulty = request.json.get('difficulty')
     try:
-      question = Question(
-        question=create_question,
-        answer=create_answer,
-        difficulty=create_difficulty,
-        category=create_category
-      )
-      question.insert()
+      new_question = Question(create_question, create_answer, create_category, create_difficulty)
+      new_question.insert()
+      selection = Question.query.order_by(Question.id).all()
+      current_questions = get_paginated_questions(request, selection)
       return jsonify({
         'success': True,
-        'question created': question.id,
+        'questions': current_questions,
       })
-    except:
+    except Exception:
       abort(422)
   '''
   @TODO?: 
@@ -227,6 +146,9 @@ def create_app(test_config=None):
         'total_questions': len(selection),
         'current_category': None,
       })
+# You can return an array of categories of the returned list of questions, instead of returning None in all cases.
+
+
     except:
       abort(404)
   '''
@@ -262,29 +184,23 @@ def create_app(test_config=None):
   and shown whether they were correct or not. 
   '''
   @app.route('/quizzes', methods=['POST'])
-  def play_quiz_question():
+  def play_quiz():
     try:
       data = request.get_json()
-      previous_questions = data.get('previous_questions')
-      q_category = data.get('quiz_category')
-      if ((q_category is None) or (previous_questions is None)):
-        abort(422)
-      if (q_category['id'] == 0):
-        questions = Question.query.all()
+      previous_qs = data.get('previous_questions', None)
+      q_category = data.get('quiz_category', None)
+      c_id = q_category['id']
+      if c_id == 0:
+        questions = Question.query.filter(Question.id.notin_(previous_qs)).all()
       else:
-        questions = Question.query.filter_by(category=q_category['id']).all()
-      def get_random_question():
-        return questions[random.randint(0, len(questions) - 1)]
-      next_question = get_random_question
-      found = True
-      while found:
-        if next_question.id in previous_questions:
-          next_question = get_random_question()
-        else:
-          found = False
+        questions = Question.query.filter(Question.category==c_id, \
+        Question.id.notin_(previous_qs)).all()
+      question = None
+      if questions:
+        question = random.choice(questions)
       return jsonify({
         'success': True,
-        'question': next_question
+        'question': question.format()
       })
     except:
       abort(422)
