@@ -38,8 +38,19 @@ def get_token_auth_header():
     it should raise an AuthError if the requested permission string is not in the payload permissions array
     return true otherwise
 '''
+
 def check_permissions(permission, payload):
     raise Exception('Not Implemented')
+    if "permissions" in payload:
+        if permission in payload['permissions']:
+            return True
+    raise AuthError({
+        'success': False,
+        'message': 'Permission not found in JWT',
+        'error': 401
+    }, 401)
+
+
 '''
 @TODO implement verify_decode_jwt(token) method
     @INPUTS
