@@ -32,14 +32,19 @@ db_drop_and_create_all()
 @app.route('/drinks')
 def drinks():
     drinks_q = Drink.query.all()
-    drinks = []
-    for drink in drinks_q:
-        drinks.append(drink.short())
-
-          return jsonify({
+    print(len(drinks_q))
+    print("----------")
+    if len(drinks_q) == 0:
+        abort(404)
+    drinks = [drink.short() for drink in drinks_q]
+    # for drink in drinks_q:
+    #     drinks.append(drink.short())
+    # # list(map(lambda drink: drink.short(), drinks))
+    return jsonify({
         "success": True,
         "drinks": drinks
     })
+
 
 '''
 @TODO implement endpoint
@@ -61,6 +66,20 @@ def drinks():
         or appropriate status code indicating reason for failure
 '''
 
+@app.route('/drinks', methods=['POST'])
+def create_new_drink():
+    body = request.get_json()
+    new_title= body.get('title', None)
+    new_recipe= body.get('recipe', None)
+    new_drink = Drink(title=new_title , recipe=json.dumps(new_recipe))
+    new_drink.insert()
+    drinks_all = Drink.query.all()
+    drinks = [drink.long() for drink in drinks_all]
+    return jsonify ({
+        "success": True ,
+        "drinks": drinks,     
+      })
+
 
 '''
 @TODO implement endpoint
@@ -74,6 +93,24 @@ def drinks():
         or appropriate status code indicating reason for failure
 '''
 
+@app.route('/drinks/<int:id>', methods=['PATCH'])
+@requires_auth('patch:drinks')
+def replace_drink(payload, id):
+    drink = Drink.query.filter_by(id=id).first()
+    if drink is None:
+        abort(404)
+    else:
+        body = request.get_json()
+        new_title= body.get('title', None)
+        new_recipe= body.get('recipe', None)
+        drink.title = new_title
+        drink.recipe = json.dumps(new_recipe)
+        drink.update()
+    return jsonify({
+        'success': True,
+        "drinks": drink.long()
+    })
+
 
 '''
 @TODO implement endpoint
@@ -85,6 +122,19 @@ def drinks():
     returns status code 200 and json {"success": True, "delete": id} where id is the id of the deleted record
         or appropriate status code indicating reason for failure
 '''
+
+@app.route('/drinks/<int:id>', methods=['DELETE'])
+@requires_auth('delete:drinks')
+def delete_drink_by_id(payload, id):
+    drink = Drink.query.filter_by(id=id).first()
+    if drink is None:
+        abort(404)
+    else:
+        drink.delete()
+    return jsonify({
+        'success': True,
+        "delete": id
+    })
 
 
 ## Error Handling
