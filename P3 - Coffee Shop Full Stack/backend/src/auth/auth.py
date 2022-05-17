@@ -3,19 +3,25 @@ from flask import request, _request_ctx_stack
 from functools import wraps
 from jose import jwt
 from urllib.request import urlopen
+
 AUTH0_DOMAIN = 'udacity-fsnd.auth0.com'
 ALGORITHMS = ['RS256']
 API_AUDIENCE = 'dev'
+
 ## AuthError Exception
 '''
 AuthError Exception
 A standardized way to communicate auth failure modes
 '''
+
 class AuthError(Exception):
     def __init__(self, error, status_code):
         self.error = error
         self.status_code = status_code
+
 ## Auth Header
+
+
 '''
 @TODO implement get_token_auth_header() method
     it should attempt to get the header from the request
@@ -24,6 +30,7 @@ class AuthError(Exception):
         it should raise an AuthError if the header is malformed
     return the token part of the header
 '''
+
 def get_token_auth_header():
 
     if "Authorization" in request.headers:
@@ -50,7 +57,6 @@ def get_token_auth_header():
 '''
 
 def check_permissions(permission, payload):
-    raise Exception('Not Implemented')
     if "permissions" in payload:
         if permission in payload['permissions']:
             return True
@@ -70,11 +76,11 @@ def check_permissions(permission, payload):
     it should decode the payload from the token
     it should validate the claims
     return the decoded payload
+
     !!NOTE urlopen has a common certificate error described here: https://stackoverflow.com/questions/50236117/scraping-ssl-certificate-verify-failed-error-for-http-en-wikipedia-org
 '''
 
 def verify_decode_jwt(token):
-    raise Exception('Not Implemented')
     # GET THE PUBLIC KEY FROM AUTH0
     jsonurl = urlopen(f'http://{AUTH0_DOMAIN}/.well-known/jwks.json')
     jwks = json.loads(jsonurl.read())
@@ -151,6 +157,7 @@ def verify_decode_jwt(token):
     it should use the check_permissions method validate claims and check the requested permission
     return the decorator which passes the decoded payload to the decorated method
 '''
+
 def requires_auth(permission=''):
     def requires_auth_decorator(f):
         @wraps(f)
@@ -167,4 +174,5 @@ def requires_auth(permission=''):
             return f(payload, *args, **kwargs)
 
         return wrapper
-   return requires_auth_decorator
+
+    return requires_auth_decorator

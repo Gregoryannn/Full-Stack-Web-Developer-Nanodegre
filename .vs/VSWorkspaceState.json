@@ -1,7 +1,16 @@
 {
   "ExpandedNodes": [
-    ""
+    "",
+    "\\P3 - Coffee Shop Full Stack",
+    "\\P3 - Coffee Shop Full Stack\\backend\\src",
+    "\\P3 - Coffee Shop Full Stack\\backend\\src\\auth",
+    "\\P3 - Coffee Shop Full Stack\\backend\\src\\database",
+    "\\P3 - Coffee Shop Full Stack\\frontend\\src",
+    "\\P3 - Coffee Shop Full Stack\\frontend\\src\\app",
+    "\\P3 - Coffee Shop Full Stack\\frontend\\src\\app\\services",
+    "\\P3 - Coffee Shop Full Stack\\frontend\\src\\environments",
+    "\\P3 - Coffee Shop Full Stack\\frontend\\src\\theme"
   ],
-  "SelectedNode": "\\C:\\Users\\asus\\Source\\Repos\\Full-Stack-Web-Developer-Nanodegre19875234r5 bgsd",
+  "SelectedNode": "\\P3 - Coffee Shop Full Stack\\frontend",
   "PreviewInSolutionExplorer": false
 }
