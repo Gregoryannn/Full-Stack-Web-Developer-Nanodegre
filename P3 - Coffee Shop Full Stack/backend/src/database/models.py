@@ -2,10 +2,13 @@ import os
 from sqlalchemy import Column, String, Integer
 from flask_sqlalchemy import SQLAlchemy
 import json
+
 database_filename = "database.db"
 project_dir = os.path.dirname(os.path.abspath(__file__))
 database_path = "sqlite:///{}".format(os.path.join(project_dir, database_filename))
+
 db = SQLAlchemy()
+
 '''
 setup_db(app)
     binds a flask application and a SQLAlchemy service
@@ -15,6 +18,7 @@ def setup_db(app):
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
     db.app = app
     db.init_app(app)
+
 '''
 db_drop_and_create_all()
     drops the database tables and starts fresh
@@ -24,6 +28,7 @@ db_drop_and_create_all()
 def db_drop_and_create_all():
     db.drop_all()
     db.create_all()
+
 '''
 Drink
 a persistent drink entity, extends the base SQLAlchemy Model
@@ -52,6 +57,7 @@ class Drink(db.Model):
             'title': self.title,
             'recipe': short_recipe
         }
+
     '''
     long()
         long form representation of the Drink model
@@ -62,6 +68,7 @@ class Drink(db.Model):
             'title': self.title,
             'recipe': json.loads(self.recipe)
         }
+
     '''
     insert()
         inserts a new model into a database
@@ -74,6 +81,7 @@ class Drink(db.Model):
     def insert(self):
         db.session.add(self)
         db.session.commit()
+
     '''
     delete()
         deletes a new model into a database
@@ -85,6 +93,7 @@ class Drink(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
     '''
     update()
         updates a new model into a database
@@ -96,5 +105,6 @@ class Drink(db.Model):
     '''
     def update(self):
         db.session.commit()
+
     def __repr__(self):
         return json.dumps(self.short())
